@@ -1,37 +1,206 @@
 # Vibeguard
 
-An MCP server that forces a project bootstrap and supplies a security gate prompt after each reported change.
+Ship vibe-coded projects with structure first and security every time.
 
-## What it actually guarantees
+`Vibeguard` is an MCP server for AI coding workflows. It initializes core project docs before implementation starts, then injects a security review gate after each meaningful change.
 
-It creates `PRD.md`, `ARCHITECTURE.md`, `RULES.md`, `PHASES.md`, and `DESIGN.md` when `initialize_project` is called. It refuses a review unless the project was initialized, and records each review in `.vibecode-security/state.json`.
+It is built for tools like Codex and Antigravity that support MCP servers.
 
-It **cannot** silently watch every filesystem edit made by every AI editor. MCP is client-to-server RPC, not a universal write hook. Your agent must be instructed to call `initialize_project` before work and `security_review_change` after each change; for hard enforcement, add the same call to your editor/agent's post-edit or pre-commit hook.
+## What it does
 
-Ready-to-use trigger and agent templates are included:
+- Creates `PRD.md`, `ARCHITECTURE.md`, `RULES.md`, `PHASES.md`, and `DESIGN.md` at project start
+- Stores lifecycle state in `.vibecode-security/state.json`
+- Forces security review prompts after code, config, auth, API, schema, infra, or dependency changes
+- Applies project-wide checks for secrets, input validation, IDOR/ownership enforcement, deployment hardening, and authentication security
+- Ships with ready-to-paste agent rules for Codex and Antigravity
 
-- `TRIGGER_SPEC.md`
-- `AGENTS.codex.md`
-- `AGENTS.antigravity.md`
+## Why it exists
 
-## Included security directives
+Most vibe-coded projects move straight from prompt to code. That is where messy architecture, missing documentation, leaked secrets, weak auth, and broken access control show up later.
 
-Every `security_review_change` response now includes the five supplied directives: secure deployment and monitoring, project-wide secret scanning, input validation/sanitization, API/database ownership enforcement against IDOR, and authentication hardening.
+Vibeguard changes that flow:
 
-## Install and run
+1. Initialize the project first
+2. Generate the planning docs first
+3. Build the code
+4. Run security review before claiming the change is done
+
+## How it works
+
+Vibeguard exposes two MCP tools:
+
+1. `initialize_project`
+2. `security_review_change`
+
+Typical lifecycle:
+
+1. User says: `build a SaaS dashboard`
+2. Agent calls `initialize_project`
+3. Vibeguard creates the project docs
+4. Agent writes code
+5. After changes, agent calls `security_review_change`
+6. Vibeguard returns a security gate prompt and records review state
+
+## Important limitation
+
+Vibeguard is not a filesystem watcher.
+
+It does not silently intercept every edit made by every AI editor. MCP is client-to-server RPC. Your client or agent must be configured to call `initialize_project` and `security_review_change` at the right times.
+
+That means:
+
+- the MCP server provides the workflow
+- the client or agent provides the enforcement
+
+If you claim "automatic security on every change" without client-side rules or hooks, that is misleading.
+
+## Install
+
+Run directly with `npx`:
 
 ```powershell
-cd C:\path\to\vibeguard
-npm install
-npm start
+npx vibeguard
 ```
 
-Add this to the MCP client configuration (adjust the absolute path):
+Or install globally:
+
+```powershell
+npm install -g vibeguard
+vibeguard
+```
+
+## MCP config
+
+Recommended portable config:
 
 ```json
 {
   "mcpServers": {
-    "vibecode-security": {
+    "vibeguard": {
+      "command": "npx",
+      "args": ["-y", "vibeguard"]
+    }
+  }
+}
+```
+
+If installed globally:
+
+```json
+{
+  "mcpServers": {
+    "vibeguard": {
+      "command": "vibeguard"
+    }
+  }
+}
+```
+
+## Codex setup
+
+Add `vibeguard` to Codex MCP config, then paste the Codex agent rules from:
+
+- `AGENTS.codex.md`
+
+Codex local config example:
+
+```toml
+[mcp_servers.vibeguard]
+command = "npx"
+args = ["-y", "vibeguard"]
+startup_timeout_sec = 20
+tool_timeout_sec = 120
+```
+
+## Antigravity setup
+
+Add `vibeguard` to Antigravity `mcp_config.json`, then paste the Antigravity agent rules from:
+
+- `AGENTS.antigravity.md`
+
+Antigravity config example:
+
+```json
+{
+  "mcpServers": {
+    "vibeguard": {
+      "command": "npx",
+      "args": ["-y", "vibeguard"]
+    }
+  }
+}
+```
+
+## Included security directives
+
+Every `security_review_change` response includes these review requirements:
+
+1. Secure deployment and monitoring
+2. Secret and credential scanning
+3. Input validation and sanitization
+4. Ownership checks and IDOR prevention
+5. Authentication hardening
+
+## Trigger rules
+
+The included trigger spec treats these as project-start signals:
+
+- `build`
+- `create`
+- `make`
+- `scaffold`
+- `start`
+- `generate`
+- `initialize`
+
+When combined with requests like:
+
+- `website`
+- `app`
+- `tool`
+- `dashboard`
+- `SaaS`
+- `API`
+- `backend`
+- `frontend`
+- `fullstack app`
+- `mobile app`
+- `bot`
+- `automation`
+- `extension`
+
+That trigger behavior is documented in:
+
+- `TRIGGER_SPEC.md`
+
+## Included files
+
+- `AGENTS.codex.md`
+- `AGENTS.antigravity.md`
+- `TRIGGER_SPEC.md`
+
+## Tool sequence
+
+1. `initialize_project({ projectPath, projectName, description, stack })`
+2. Build or modify the project
+3. `security_review_change({ projectPath, changeSummary, diff, projectContext })`
+4. Fix Critical and High findings before completion
+
+## Local development
+
+```powershell
+git clone https://github.com/vatsalgargg/vibeguard.git
+cd vibeguard
+npm install
+npm start
+```
+
+For local development MCP config:
+
+```json
+{
+  "mcpServers": {
+    "vibeguard": {
       "command": "node",
       "args": ["C:/path/to/vibeguard/src/index.js"]
     }
@@ -39,13 +208,27 @@ Add this to the MCP client configuration (adjust the absolute path):
 }
 ```
 
-Then load the `vibecode-security://lifecycle` resource into the coding agent's permanent instructions, or paste its content into the agent rule set. That step is what makes the tools run in the intended order.
+## Publish to npm
 
-For faster setup, you can also paste one of the included agent templates into your client's `AGENTS.md` or system instruction area.
+Login:
 
-## Tool sequence
+```powershell
+npm login
+```
 
-1. `initialize_project({ projectPath, projectName, description, stack })`
-2. Build or modify code.
-3. `security_review_change({ projectPath, changeSummary, diff, projectContext })`
-4. Address Critical/High findings before proceeding.
+Publish the first version:
+
+```powershell
+npm publish
+```
+
+Publish an update later:
+
+```powershell
+npm version patch
+npm publish
+```
+
+## Repository
+
+- GitHub: [vatsalgargg/vibeguard](https://github.com/vatsalgargg/vibeguard)

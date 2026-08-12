@@ -2,6 +2,35 @@
   "name": "vibeguard",
   "version": "0.1.0",
   "description": "MCP lifecycle guardrails for vibecoded projects",
+  "license": "MIT",
+  "author": "Vatsal Garg <vatsalg80@gmail.com>",
+  "homepage": "https://github.com/vatsalgargg/vibeguard#readme",
+  "bugs": {
+    "url": "https://github.com/vatsalgargg/vibeguard/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vatsalgargg/vibeguard.git"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "security",
+    "ai-coding",
+    "vibecoding",
+    "codex",
+    "antigravity"
+  ],
+  "files": [
+    "src",
+    "README.md",
+    "AGENTS.codex.md",
+    "AGENTS.antigravity.md",
+    "TRIGGER_SPEC.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "bin": {
     "vibeguard": "src/index.js"
