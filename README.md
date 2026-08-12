@@ -59,13 +59,13 @@ If you claim "automatic security on every change" without client-side rules or h
 Run directly with `npx`:
 
 ```powershell
-npx vibeguard
+npx -y @vatsalgarg/vibeguard
 ```
 
 Or install globally:
 
 ```powershell
-npm install -g vibeguard
+npm install -g @vatsalgarg/vibeguard
 vibeguard
 ```
 
@@ -78,7 +78,7 @@ Recommended portable config:
   "mcpServers": {
     "vibeguard": {
       "command": "npx",
-      "args": ["-y", "vibeguard"]
+      "args": ["-y", "@vatsalgarg/vibeguard"]
     }
   }
 }
@@ -107,7 +107,7 @@ Codex local config example:
 ```toml
 [mcp_servers.vibeguard]
 command = "npx"
-args = ["-y", "vibeguard"]
+args = ["-y", "@vatsalgarg/vibeguard"]
 startup_timeout_sec = 20
 tool_timeout_sec = 120
 ```
@@ -125,7 +125,7 @@ Antigravity config example:
   "mcpServers": {
     "vibeguard": {
       "command": "npx",
-      "args": ["-y", "vibeguard"]
+      "args": ["-y", "@vatsalgarg/vibeguard"]
     }
   }
 }
