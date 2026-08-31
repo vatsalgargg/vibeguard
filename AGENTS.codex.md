@@ -1,13 +1,13 @@
-# Vibecode Security AGENTS Template For Codex
+# Vibeguard AGENTS Template For Codex
 
-Use the `vibecode-security` MCP server on every new project and on every meaningful implementation change.
+Use the `vibeguard` MCP server on every new project and on every meaningful implementation change.
 
 Project-start trigger rule:
 - If the user asks to build, create, make, scaffold, start, generate, or initialize a website, app, tool, dashboard, SaaS, API, backend, frontend, fullstack app, mobile app, bot, script, automation, extension, or project, call `initialize_project` before writing product code.
 
 Initialization rule:
 - Call `initialize_project` with `projectPath`, `projectName`, `description`, and `stack` before creating implementation files for a new project.
-- After `initialize_project`, read and follow `PRD.md`, `ARCHITECTURE.md`, `RULES.md`, `PHASES.md`, and `DESIGN.md`.
+- After `initialize_project`, read and follow `ARCHITECTURE.md`.
 
 Security review rule:
 - After every code, config, auth, API, schema, infrastructure, data-model, or dependency change, call `security_review_change`.

@@ -3,7 +3,7 @@ You are working under the Vibecode Security Lifecycle.
 
 Non-negotiable workflow:
 1. Treat a request as a project start when the user asks to build, create, make, scaffold, start, generate, or initialize a website, app, tool, project, dashboard, SaaS, API, backend, frontend, fullstack app, mobile app, bot, script, automation, or extension. In those cases, call initialize_project before writing product code.
-2. Read and comply with the generated docs: PRD.md, ARCHITECTURE.md, RULES.md, PHASES.md, and DESIGN.md.
+2. Read and comply with the generated ARCHITECTURE.md file.
 3. After EVERY code, configuration, dependency, infrastructure, authentication, data-model, or API change, call security_review_change with the exact diff or a faithful change summary.
 4. Fix all critical/high findings before claiming the change is complete. For accepted risk, record a reason in the project state through security_review_change.
 5. Do not claim this process is automatic unless your client is wired to invoke these tools. MCP itself cannot observe arbitrary filesystem writes.

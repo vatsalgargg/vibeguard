@@ -1,14 +1,14 @@
 # Vibeguard
 
-Ship vibe-coded projects with structure first and security every time.
+Ship vibe-coded projects with architecture first and security every time.
 
-`Vibeguard` is an MCP server for AI coding workflows. It initializes core project docs before implementation starts, then injects a security review gate after each meaningful change.
+`Vibeguard` is an MCP server for AI coding workflows. It initializes project architecture before implementation starts, then injects a security review gate after each meaningful change.
 
 It is built for tools like Codex and Antigravity that support MCP servers.
 
 ## What it does
 
-- Creates `PRD.md`, `ARCHITECTURE.md`, `RULES.md`, `PHASES.md`, and `DESIGN.md` at project start
+- Creates `ARCHITECTURE.md` at project start
 - Stores lifecycle state in `.vibecode-security/state.json`
 - Forces security review prompts after code, config, auth, API, schema, infra, or dependency changes
 - Applies project-wide checks for secrets, input validation, IDOR/ownership enforcement, deployment hardening, and authentication security
@@ -21,7 +21,7 @@ Most vibe-coded projects move straight from prompt to code. That is where messy 
 Vibeguard changes that flow:
 
 1. Initialize the project first
-2. Generate the planning docs first
+2. Generate the architecture first
 3. Build the code
 4. Run security review before claiming the change is done
 
@@ -36,7 +36,7 @@ Typical lifecycle:
 
 1. User says: `build a SaaS dashboard`
 2. Agent calls `initialize_project`
-3. Vibeguard creates the project docs
+3. Vibeguard creates `ARCHITECTURE.md`
 4. Agent writes code
 5. After changes, agent calls `security_review_change`
 6. Vibeguard returns a security gate prompt and records review state

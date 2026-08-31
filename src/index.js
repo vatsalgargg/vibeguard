@@ -15,7 +15,7 @@ const stateFile = (projectPath) => path.join(path.resolve(projectPath), ".vibeco
 const text = (value) => ({ content: [{ type: "text", text: value }] });
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: [
-  { name: "initialize_project", description: "MUST be called before implementation. Creates the mandatory product, architecture, engineering, phase, and design documents plus lifecycle state.", inputSchema: { type: "object", properties: { projectPath: { type: "string" }, projectName: { type: "string" }, description: { type: "string" }, stack: { type: "string" } }, required: ["projectPath", "projectName", "description"] } },
+  { name: "initialize_project", description: "MUST be called before implementation. Creates ARCHITECTURE.md plus lifecycle state.", inputSchema: { type: "object", properties: { projectPath: { type: "string" }, projectName: { type: "string" }, description: { type: "string" }, stack: { type: "string" } }, required: ["projectPath", "projectName", "description"] } },
   { name: "security_review_change", description: "MUST be called after every change. Returns the custom security gate prompt and records review metadata. Pass the exact diff when available.", inputSchema: { type: "object", properties: { projectPath: { type: "string" }, changeSummary: { type: "string" }, diff: { type: "string" }, projectContext: { type: "string" }, findings: { type: "array" } }, required: ["projectPath", "changeSummary"] } }
 ] }));
 
