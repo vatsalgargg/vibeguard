@@ -40,10 +40,11 @@ Manual user triggers:
 - `security check`
 - `audit this change`
 
-## Trigger `hard_audit`
+## Trigger `hard_sec_audit`
 
-Call `hard_audit` for project-wide release-blocking audit requests:
+Call `hard_sec_audit` for project-wide release-blocking audit requests:
 
+- `hard sec audit`
 - `hard audit`
 - `deep security audit`
 - `final security audit`
@@ -52,7 +53,7 @@ Call `hard_audit` for project-wide release-blocking audit requests:
 - `audit the whole project`
 
 Interpretation rule:
-- Use `hard_audit` for whole-project security review.
+- Use `hard_sec_audit` for whole-project security review.
 - Use `security_review_change` for the latest change scope.
 
 ## Important limitation

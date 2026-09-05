@@ -12,7 +12,7 @@ It is built for tools like Codex and Antigravity that support MCP servers.
 - Stores lifecycle state in `.vibecode-security/state.json`
 - Forces security review prompts after code, config, auth, API, schema, infra, or dependency changes
 - Applies project-wide checks for secrets, input validation, IDOR/ownership enforcement, deployment hardening, and authentication security
-- Provides a `hard_audit` command for full project release-blocking security audits
+- Provides a `hard_sec_audit` command for full project release-blocking security audits
 - Ships with ready-to-paste agent rules for Codex and Antigravity
 
 ## Why it exists
@@ -32,7 +32,7 @@ Vibeguard exposes three MCP tools:
 
 1. `initialize_project`
 2. `security_review_change`
-3. `hard_audit`
+3. `hard_sec_audit`
 
 Typical lifecycle:
 
@@ -42,7 +42,7 @@ Typical lifecycle:
 4. Agent writes code
 5. After changes, agent calls `security_review_change`
 6. Vibeguard returns a security gate prompt and records review state
-7. User can say `hard audit` to trigger a stricter full-project audit
+7. User can say `hard sec audit` to trigger a stricter full-project audit
 
 ## Important limitation
 
@@ -144,12 +144,13 @@ Every `security_review_change` response includes these review requirements:
 4. Ownership checks and IDOR prevention
 5. Authentication hardening
 
-## Hard audit
+## Hard Sec Audit
 
-Use `hard_audit` when you want the agent to audit the whole project, not just the latest change.
+Use `hard_sec_audit` when you want the agent to audit the whole project, not just the latest change.
 
 Trigger phrases:
 
+- `hard sec audit`
 - `hard audit`
 - `deep security audit`
 - `final security audit`
@@ -157,7 +158,7 @@ Trigger phrases:
 - `full security review`
 - `audit the whole project`
 
-The hard audit uses the same security directives, but asks the agent to trace data flow, verify auth and ownership controls, inspect secrets and deployment posture, look for compound failures, and return a release-blocking `BLOCK` or `PASS` verdict.
+The hard sec audit uses the same security directives, but asks the agent to trace data flow, verify auth and ownership controls, inspect secrets and deployment posture, look for compound failures, and return a release-blocking `BLOCK` or `PASS` verdict.
 
 ## Trigger rules
 
@@ -202,7 +203,7 @@ That trigger behavior is documented in:
 1. `initialize_project({ projectPath, projectName, description, stack })`
 2. Build or modify the project
 3. `security_review_change({ projectPath, changeSummary, diff, projectContext })`
-4. `hard_audit({ projectPath, projectContext, focus, files, diff })`
+4. `hard_sec_audit({ projectPath, projectContext, focus, files, diff })`
 5. Fix Critical and High findings before completion
 
 ## Local development

@@ -18,7 +18,7 @@ const text = (value) => ({ content: [{ type: "text", text: value }] });
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: [
   { name: "initialize_project", description: "MUST be called before implementation. Creates ARCHITECTURE.md plus lifecycle state.", inputSchema: { type: "object", properties: { projectPath: { type: "string" }, projectName: { type: "string" }, description: { type: "string" }, stack: { type: "string" } }, required: ["projectPath", "projectName", "description"] } },
   { name: "security_review_change", description: "MUST be called after every change. Returns the custom security gate prompt and records review metadata. Pass the exact diff when available.", inputSchema: { type: "object", properties: { projectPath: { type: "string" }, changeSummary: { type: "string" }, diff: { type: "string" }, projectContext: { type: "string" }, findings: { type: "array" } }, required: ["projectPath", "changeSummary"] } },
-  { name: "hard_audit", description: "Runs a strict project-wide security audit prompt using the custom security directives. Use when the user says hard audit, deep security audit, final security audit, release audit, or full security review.", inputSchema: { type: "object", properties: { projectPath: { type: "string" }, projectContext: { type: "string" }, focus: { type: "string" }, files: { type: "string" }, diff: { type: "string" }, findings: { type: "array" } }, required: ["projectPath"] } }
+  { name: "hard_sec_audit", description: "Runs a strict project-wide security audit prompt using the custom security directives. Use when the user says hard sec audit, hard audit, deep security audit, final security audit, release audit, or full security review.", inputSchema: { type: "object", properties: { projectPath: { type: "string" }, projectContext: { type: "string" }, focus: { type: "string" }, files: { type: "string" }, diff: { type: "string" }, findings: { type: "array" } }, required: ["projectPath"] } }
 ] }));
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
@@ -39,7 +39,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     await writeFile(file, JSON.stringify(state, null, 2), "utf8");
     return text(`${securityPrompt(input)}\n\nLifecycle status: ${state.reviews.at(-1).status}.`);
   }
-  if (request.params.name === "hard_audit") {
+  if (request.params.name === "hard_sec_audit") {
     const input = hardAuditSchema.parse(request.params.arguments); const file = stateFile(input.projectPath);
     let state; try { state = JSON.parse(await readFile(file, "utf8")); } catch { throw new Error("Project is not initialized. Call initialize_project first."); }
     state.reviews.push({ at: new Date().toISOString(), summary: `Hard audit: ${input.focus || "Full application security audit"}`, findings: input.findings || [], status: input.findings?.some(f => ["critical", "high"].includes(f.severity) && f.status === "open") ? "BLOCK" : "PENDING_AGENT_REVIEW" });

@@ -14,9 +14,9 @@ Security review rule:
 - Pass the exact diff when available. Otherwise pass a faithful `changeSummary` and enough `projectContext` to evaluate risk.
 - Do not mark work complete while any Critical or High finding remains open.
 
-Hard audit rule:
-- If the user says `hard audit`, `deep security audit`, `final security audit`, `release audit`, `full security review`, or similar, call `hard_audit` immediately for the full project scope.
-- Treat `hard_audit` as a release-blocking project-wide audit, not a quick change review.
+Hard sec audit rule:
+- If the user says `hard sec audit`, `hard audit`, `deep security audit`, `final security audit`, `release audit`, `full security review`, or similar, call `hard_sec_audit` immediately for the full project scope.
+- Treat `hard_sec_audit` as a release-blocking project-wide audit, not a quick change review.
 
 User-invoked security rule:
 - If the user says `security`, `run security`, `review security`, `security check`, or similar, call `security_review_change` immediately for the latest change scope.
