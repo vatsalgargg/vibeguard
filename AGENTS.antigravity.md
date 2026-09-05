@@ -20,7 +20,7 @@ Hard sec audit rule:
 
 Hard DB audit rule:
 - Only call `hard_db_audit` when the user explicitly says `hard db audit`.
-- Treat `hard_db_audit` as a release-blocking database-layer audit, not a quick change review.
+- Treat `hard_db_audit` as a release-blocking database integrity audit, not a quick change review.
 
 User-invoked security rule:
 - If the user says `security`, `run security`, `review security`, `security check`, or similar, call `security_review_change` immediately for the latest change scope.

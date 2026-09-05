@@ -58,7 +58,7 @@ Call `hard_db_audit` only when the user explicitly says:
 - `hard db audit`
 
 Interpretation rule:
-- Use `hard_db_audit` for database-layer, data-access, query, schema, RLS, ownership, and data-security review.
+- Use `hard_db_audit` for database integrity, constraints, relationships, transactions, idempotency, delete safety, migrations, indexes, and backup/restore review.
 - Use `hard_sec_audit` for whole-project application security review.
 - Use `security_review_change` for the latest change scope.
 - Do not call `hard_db_audit` for inferred, similar, or automatic security requests.

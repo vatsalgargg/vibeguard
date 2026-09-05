@@ -13,7 +13,7 @@ It is built for tools like Codex and Antigravity that support MCP servers.
 - Forces security review prompts after code, config, auth, API, schema, infra, or dependency changes
 - Applies project-wide checks for secrets, input validation, IDOR/ownership enforcement, deployment hardening, and authentication security
 - Provides a `hard_sec_audit` command for full project release-blocking security audits
-- Provides a `hard_db_audit` command for explicit database-layer security audits
+- Provides a `hard_db_audit` command for explicit database integrity audits
 - Ships with ready-to-paste agent rules for Codex and Antigravity
 
 ## Why it exists
@@ -162,7 +162,7 @@ The hard sec audit uses the same security directives, but asks the agent to trac
 
 ## Hard DB Audit
 
-Use `hard_db_audit` when you want the agent to audit the database layer, data-access paths, schemas, RLS/ownership controls, query safety, data privacy, backups, and database deployment posture.
+Use `hard_db_audit` when you want the agent to audit database integrity, duplicate risks, constraints, relationships, transactions, idempotency, delete safety, migrations, indexes, cache consistency, and backup/restore readiness.
 
 Exact trigger phrase:
 
@@ -172,7 +172,7 @@ Do not call `hard_db_audit` for inferred, similar, or automatic security request
 
 - `check my database`
 
-The hard DB audit is database-focused and asks the agent to inspect real data stores, query paths, authorization around data access, injection risks, secrets, public exposure, migrations, backups, logging, and data-integrity controls before returning a release-blocking report.
+The hard DB audit is database-integrity focused and asks the agent to inspect real architecture, models, relationships, indexes, migrations, critical workflows, state transitions, transactions, idempotency, delete behavior, backup readiness, and existing protections before stopping for approval.
 
 ## Trigger rules
 

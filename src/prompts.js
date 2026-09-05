@@ -54,43 +54,99 @@ export function hardAuditPrompt() {
 }
 
 export function hardDbAuditPrompt() {
-  return `Act as a Senior Database Security Engineer, Application Security Engineer, Backend Security Reviewer, API Security Specialist, and Production Data-Security Auditor. Your task is to perform a complete, evidence-based HARD DATABASE SECURITY AUDIT of this project, but you MUST NOT modify, delete, refactor, upgrade, install, migrate, patch, rotate secrets, change schemas, change infrastructure, or fix anything until the full database audit is completed and the ADMIN explicitly approves remediation.
+  return String.raw`Act as a Senior Database Reliability Engineer and Backend Architect. First, scan the entire project and understand the actual architecture before doing anything. Detect the database, ORM/database layer, models, relationships, indexes, migrations, API flows, background jobs, delete logic, state transitions, deployment environments, caching, transactions, and critical business workflows.
 
-Follow this exact workflow: DISCOVER → IDENTIFY DATA STORES → MAP DATA FLOWS → MAP TRUST BOUNDARIES → AUDIT DATABASE ACCESS → VERIFY → SCORE → REPORT → ASK ADMIN → FIX ONLY AFTER APPROVAL → RE-TEST.
+Start strictly in READ-ONLY AUDIT MODE. Do not modify code, schema, indexes, migrations, configuration, dependencies, or database records. Do not run destructive commands or production migrations. Do not invent problems. Every finding must be supported by actual code/schema evidence.
 
-First recursively scan and understand the complete repository before reporting findings. Inspect database schemas, migrations, models, ORM/ODM definitions, query builders, raw SQL, NoSQL queries, stored procedures, repository/data-access layers, API endpoints that touch data, authentication and authorization paths, row-level security policies, access-control middleware, seed scripts, admin tools, backup/export/import scripts, analytics pipelines, cache usage, queue consumers, object storage metadata, environment templates, package manifests, lockfiles, Docker files, CI/CD workflows, cloud database configuration, connection strings, logs, tests, and documentation. Avoid generated build/vendor directories, but inspect dependency manifests and security-relevant generated configuration.
+Perform a production-grade Database Integrity Audit covering:
 
-Do NOT assume the database technology. Detect from repository evidence whether the project uses PostgreSQL, MySQL, SQLite, SQL Server, MongoDB, Firebase, Supabase, Prisma, Drizzle, Sequelize, TypeORM, Mongoose, SQLAlchemy, Django ORM, Laravel Eloquent, Redis, DynamoDB, Elasticsearch, vector databases, file-backed storage, or another data store. If no database exists, say so and mark DB-specific checks NOT APPLICABLE instead of inventing findings.
+- Duplicate data and duplicate-creation risks
+- Missing or incorrect unique/composite constraints
+- Orphan records and broken relationships
+- Incorrect one-to-one / one-to-many relationships
+- Missing required fields and schema-validation mismatches
+- Invalid or inconsistent state transitions
+- Race conditions and lost updates
+- Check-then-create concurrency bugs
+- Missing atomic operations or transaction gaps
+- Idempotency problems in orders, payments, webhooks, retries, jobs, and other side-effect operations
+- Unsafe hard deletes, cascade deletes, soft deletes, and bulk deletes
+- TTL/automatic cleanup mistakes and accidental data-loss risks
+- Missing, redundant, duplicate, or incorrectly designed indexes
+- Cache/database consistency issues
+- Migration drift, destructive migrations, backfill risks, and backward compatibility
+- Seed-script production risks
+- Multi-tenant/ownership integrity where applicable
+- File-storage vs database inconsistencies
+- Timezone/date integrity issues
+- Database connection/pooling/retry risks
+- Backup, restore, PITR, RPO/RTO readiness
+- Critical business invariants that are only enforced in UI/application code instead of safely at the correct layer
 
-Build a database architecture and trust-boundary map showing Client → API/Backend → Authentication → Authorization → Data Access Layer → Database → Cache/Search/Queue/Object Storage → External Services. Identify every component that can read, create, update, delete, export, import, search, aggregate, or administer data.
+For every critical workflow, ask:
 
-Create a database attack-surface inventory covering every data-touching route, resolver, handler, RPC method, webhook, worker, CLI script, admin endpoint, cron job, migration, seed process, import/export function, search/filter/pagination endpoint, file upload metadata path, payment/order/user/profile data path, and background processor. For each, record authentication requirement, authorization requirement, expected role, ownership checks, input validation, query type, sensitive fields touched, and whether the operation is read/write/delete/admin.
+“If two requests execute at the same time, or the server crashes between database writes, can the data become duplicated, partially updated, lost, or inconsistent?”
 
-Audit secrets and connectivity. Search for database URLs, usernames, passwords, service-role keys, Supabase service keys, Firebase admin credentials, MongoDB URIs, Redis URLs, cloud DB tokens, private keys, certificate files, test credentials, hardcoded admin credentials, and insecure fallback values. Never reveal complete secrets; mask them like abcd********wxyz. Distinguish public identifiers from actual credentials and distinguish active exposure from documentation examples where evidence allows.
+Do not recommend transactions, indexes, Redis, constraints, or architecture changes unless the project actually needs them.
 
-Audit database network exposure and deployment posture. Check whether direct public database access is implied or configured, whether TLS/SSL is required, whether least-privilege DB users are used, whether admin/service credentials are server-only, whether frontend code can access privileged database keys, whether production and development databases are separated, whether backups/exports are protected, and whether dangerous debug/admin panels are exposed.
+Return a report in this format:
 
-Audit authorization and ownership as the highest priority. For every data read/write/delete, verify the server enforces logged-in user ownership, tenant isolation, role checks, organization/workspace boundaries, admin-only controls, and object-level authorization before touching or returning data. Identify IDOR/BOLA, broken object property authorization, mass data reads, cross-tenant leaks, user-controlled ownerId/userId/orgId/teamId/status/role/price/balance fields, missing row-level security, overly broad service-role use, and client-side-only access control.
+### Database Integrity Score: XX/100
 
-Audit injection deeply according to the actual technology. For SQL, trace attacker-controlled values into raw SQL, dynamic WHERE/ORDER BY/LIMIT/OFFSET, filters, search, joins, report builders, migrations, admin queries, and login paths; verify parameterized queries or safe ORM APIs before marking safe. For NoSQL, inspect operator injection, object spreading, nested JSON, $where, $regex, $ne, $gt, $in, dynamic query objects, and cases where attacker-controlled objects replace expected scalars. Also inspect ORM injection, query-builder misuse, GraphQL resolver abuse, LDAP/XPath injection if relevant, and unsafe dynamic table/column names.
+### Architecture Detected
 
-Audit data integrity. Check uniqueness constraints, foreign keys, cascading deletes, referential integrity, enum/status constraints, server-calculated totals, price/balance/order/payment fields, transactions, atomic updates, idempotency, race conditions, check-then-act bugs, duplicate submissions, replayed webhooks, concurrent updates, lost updates, and unsafe migrations that can corrupt or expose data.
+Database, ORM, important entities, relationships, critical workflows.
 
-Audit privacy and sensitive data. Identify PII, authentication data, passwords, password reset tokens, refresh tokens, emails, phone numbers, addresses, location, orders, payments, files, health/financial/student data if present, internal notes, logs, and admin actions. Check minimization, secure storage, overexposure in API responses, excessive joins/populates/select *, insecure client storage, sensitive URLs, retention, deletion behavior, and whether logs leak tokens, database URLs, SQL queries, stack traces, or PII.
+### Findings
 
-Audit database hardening and operational controls. Review indexes, pagination limits, query cost controls, rate limiting for expensive reads/searches, backup and restore paths, audit logging for auth failures/admin changes/suspicious access, migration safety, seed data safety, test data leakage, dependency risks in database drivers/ORMs, deserialization risks, unsafe XML/YAML imports, cache authorization boundaries, cache poisoning, TTL strategy, Redis exposure, and search-index data leaks.
+For each issue provide:
 
-For every suspected issue, verify the exact code path, attacker-controlled source, database sink/action, existing defenses, exploitability, preconditions, and realistic impact. Classify evidence as CONFIRMED, HIGH CONFIDENCE, POTENTIAL, NOT VULNERABLE, NOT APPLICABLE, or NOT TESTED. Do not report theoretical risks as confirmed vulnerabilities.
+[DB-001] Issue Name\
+ Severity: Critical / High / Medium / Low\
+ Confidence: High / Medium / Low\
+ Location: file/model/function/endpoint\
+ Evidence: actual detected problem\
+ Failure Scenario: how production data can break\
+ Impact: realistic consequence\
+ Minimum Safe Fix: smallest necessary solution\
+ Migration Required: Yes/No\
+ Data Cleanup Required: Yes/No/Unknown
 
-Score the database security posture out of 100 using these weights: Secrets & Connection Security 12, Database Exposure & Deployment 10, Authorization/Ownership/RLS 20, Injection Resistance 15, Input Validation for Data Operations 8, Data Privacy & Overexposure 10, Integrity/Transactions/Race Safety 8, Least Privilege & Admin Controls 7, Logging/Monitoring/Error Handling 5, Backup/Retention/Migration Safety 3, Dependency/Supply Chain for DB Layer 2. Also calculate Audit Confidence XX% based on repository coverage, runtime/API access, production config visibility, database schema visibility, dependency scanner availability, and test coverage.
+### Critical Areas
 
-Produce a HARD DB AUDIT REPORT before making any change containing Executive Summary with DB Security Score, Audit Confidence, Overall Risk, and counts of Critical/High/Medium/Low/Info findings; detected data stores; database architecture and trust boundaries; data-touching attack surface; category scores; vulnerability table with ID, severity, confidence, vulnerability, component, data store, and status; and detailed findings for each DB-SEC-XXX containing Severity, Confidence, CWE, OWASP/OWASP API mapping, Affected Component, File, Function/Class, Relevant Lines, Attack Surface, Preconditions, Description, minimal safe Evidence, realistic high-level Attack Scenario, Impact, Existing Protection, Why Existing Protection Fails, Recommended Remediation, Regression Risk, and Verification Plan.
+Summarize:
 
-Create a Database Security Test Matrix with PASS/FAIL/N/A/NOT TESTED and evidence for database secrets, public DB exposure, TLS/SSL, least privilege, RLS/tenant isolation, ownership checks, IDOR/BOLA, admin authorization, SQL injection, NoSQL injection, ORM/query-builder injection, mass assignment, overexposed fields, sensitive API responses, password/token storage, reset/session token storage, migrations, seed data, backups/exports, logs/errors, transactions, race conditions, constraints/indexes, pagination/query limits, cache security, search-index leaks, webhooks, imports/exports, dependency security, and production/dev separation. Do not mark PASS unless actually inspected.
+- Duplicate prevention
+- Relationships/orphans
+- Transactions/atomicity
+- Race conditions
+- Idempotency
+- State integrity
+- Indexes
+- Delete/TTL safety
+- Migration safety
+- Backup/restore readiness
 
-After the audit STOP COMPLETELY and make no modifications. Print "ADMIN APPROVAL REQUIRED", show DB Security Score, Audit Confidence, and severity counts, state that the project has NOT been modified, list recommended remediation order, and ask ADMIN to select exactly one option: A — Fix DB P0 Critical only, B — Fix DB P0 + P1 Critical/High, C — Fix selected DB vulnerability IDs, D — Fix all confirmed DB vulnerabilities, E — Show remediation plan/code diff first but change nothing, F — Do not modify anything.
+### Existing Protections
 
-Mandatory anti-hallucination rules: never claim a file was inspected when it was not, never claim a query/endpoint was tested when it was not, never invent databases, schemas, cloud services, vulnerabilities, CVEs, versions, or infrastructure, never assume SQL when the project uses NoSQL, never mark PASS merely because no issue was noticed, never claim production database safety from static analysis alone, never call an issue exploitable without code/data-flow evidence, always separate confirmed issues from theoretical risks, always disclose testing limitations, never reveal full secrets, never modify anything before ADMIN approval, and never hide unresolved findings to improve the score.
+Also mention what is already correctly implemented so unnecessary changes are avoided.
 
-Begin now by scanning and understanding the complete project database layer and do not make any database/security modification until the complete HARD DB AUDIT is finished and ADMIN explicitly approves remediation.`;
+### Priority Fix Plan
+
+Must Fix Before Production: Critical/High only\
+ Should Fix: Medium\
+ Optional Hardening: Low
+
+After the audit, STOP.
+
+Do not modify anything until explicit approval is given.
+
+After approval, fix only the approved findings using the smallest production-safe change, one issue at a time. Never silently delete duplicate/orphaned data. Before adding a unique constraint, first check for existing duplicates. Before schema/data changes, define migration risk, backup requirement, rollback path, and verification steps.
+
+After fixes, run only relevant tests and report exactly what was verified.
+
+Core rule:\
+ SCAN → UNDERSTAND → AUDIT → PROVE → SCORE → PROPOSE → STOP FOR APPROVAL → MINIMUM FIX → TEST → VERIFY.
+
+Never refactor working code unnecessarily, never hallucinate issues, and never change production data just to make the architecture look cleaner.`;
 }

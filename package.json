@@ -1,6 +1,6 @@
 {
   "name": "@vatsalgarg/vibeguard",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "MCP lifecycle guardrails for vibecoded projects",
   "license": "MIT",
   "author": "Vatsal Garg <vatsalg80@gmail.com>",
