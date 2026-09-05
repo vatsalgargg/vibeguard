@@ -42,19 +42,14 @@ Manual user triggers:
 
 ## Trigger `hard_sec_audit`
 
-Call `hard_sec_audit` for project-wide release-blocking audit requests:
+Call `hard_sec_audit` only when the user explicitly says:
 
 - `hard sec audit`
-- `hard audit`
-- `deep security audit`
-- `final security audit`
-- `release audit`
-- `full security review`
-- `audit the whole project`
 
 Interpretation rule:
 - Use `hard_sec_audit` for whole-project security review.
 - Use `security_review_change` for the latest change scope.
+- Do not call `hard_sec_audit` for inferred, similar, or automatic security requests.
 
 ## Important limitation
 

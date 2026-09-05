@@ -42,7 +42,7 @@ Typical lifecycle:
 4. Agent writes code
 5. After changes, agent calls `security_review_change`
 6. Vibeguard returns a security gate prompt and records review state
-7. User can say `hard sec audit` to trigger a stricter full-project audit
+7. User can explicitly say `hard sec audit` to trigger a stricter full-project audit
 
 ## Important limitation
 
@@ -148,14 +148,11 @@ Every `security_review_change` response includes these review requirements:
 
 Use `hard_sec_audit` when you want the agent to audit the whole project, not just the latest change.
 
-Trigger phrases:
+Exact trigger phrase:
 
 - `hard sec audit`
-- `hard audit`
-- `deep security audit`
-- `final security audit`
-- `release audit`
-- `full security review`
+
+Do not call `hard_sec_audit` for inferred, similar, or automatic security requests.
 - `audit the whole project`
 
 The hard sec audit uses the same security directives, but asks the agent to trace data flow, verify auth and ownership controls, inspect secrets and deployment posture, look for compound failures, and return a release-blocking `BLOCK` or `PASS` verdict.

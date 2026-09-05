@@ -15,7 +15,7 @@ Security review rule:
 - Do not mark work complete while any Critical or High finding remains open.
 
 Hard sec audit rule:
-- If the user says `hard sec audit`, `hard audit`, `deep security audit`, `final security audit`, `release audit`, `full security review`, or similar, call `hard_sec_audit` immediately for the full project scope.
+- Only call `hard_sec_audit` when the user explicitly says `hard sec audit`.
 - Treat `hard_sec_audit` as a release-blocking project-wide audit, not a quick change review.
 
 User-invoked security rule:
