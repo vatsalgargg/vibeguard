@@ -51,6 +51,18 @@ Interpretation rule:
 - Use `security_review_change` for the latest change scope.
 - Do not call `hard_sec_audit` for inferred, similar, or automatic security requests.
 
+## Trigger `hard_db_audit`
+
+Call `hard_db_audit` only when the user explicitly says:
+
+- `hard db audit`
+
+Interpretation rule:
+- Use `hard_db_audit` for database-layer, data-access, query, schema, RLS, ownership, and data-security review.
+- Use `hard_sec_audit` for whole-project application security review.
+- Use `security_review_change` for the latest change scope.
+- Do not call `hard_db_audit` for inferred, similar, or automatic security requests.
+
 ## Important limitation
 
 These are agent-side or client-side triggers. The MCP server itself does not watch the filesystem and does not self-trigger.

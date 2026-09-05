@@ -13,6 +13,7 @@ It is built for tools like Codex and Antigravity that support MCP servers.
 - Forces security review prompts after code, config, auth, API, schema, infra, or dependency changes
 - Applies project-wide checks for secrets, input validation, IDOR/ownership enforcement, deployment hardening, and authentication security
 - Provides a `hard_sec_audit` command for full project release-blocking security audits
+- Provides a `hard_db_audit` command for explicit database-layer security audits
 - Ships with ready-to-paste agent rules for Codex and Antigravity
 
 ## Why it exists
@@ -28,11 +29,12 @@ Vibeguard changes that flow:
 
 ## How it works
 
-Vibeguard exposes three MCP tools:
+Vibeguard exposes four MCP tools:
 
 1. `initialize_project`
 2. `security_review_change`
 3. `hard_sec_audit`
+4. `hard_db_audit`
 
 Typical lifecycle:
 
@@ -43,6 +45,7 @@ Typical lifecycle:
 5. After changes, agent calls `security_review_change`
 6. Vibeguard returns a security gate prompt and records review state
 7. User can explicitly say `hard sec audit` to trigger a stricter full-project audit
+8. User can explicitly say `hard db audit` to trigger a stricter database-layer audit
 
 ## Important limitation
 
@@ -157,6 +160,20 @@ Do not call `hard_sec_audit` for inferred, similar, or automatic security reques
 
 The hard sec audit uses the same security directives, but asks the agent to trace data flow, verify auth and ownership controls, inspect secrets and deployment posture, look for compound failures, and return a release-blocking `BLOCK` or `PASS` verdict.
 
+## Hard DB Audit
+
+Use `hard_db_audit` when you want the agent to audit the database layer, data-access paths, schemas, RLS/ownership controls, query safety, data privacy, backups, and database deployment posture.
+
+Exact trigger phrase:
+
+- `hard db audit`
+
+Do not call `hard_db_audit` for inferred, similar, or automatic security requests. For example, this should not trigger it:
+
+- `check my database`
+
+The hard DB audit is database-focused and asks the agent to inspect real data stores, query paths, authorization around data access, injection risks, secrets, public exposure, migrations, backups, logging, and data-integrity controls before returning a release-blocking report.
+
 ## Trigger rules
 
 The included trigger spec treats these as project-start signals:
@@ -201,7 +218,8 @@ That trigger behavior is documented in:
 2. Build or modify the project
 3. `security_review_change({ projectPath, changeSummary, diff, projectContext })`
 4. `hard_sec_audit({ projectPath, projectContext, focus, files, diff })`
-5. Fix Critical and High findings before completion
+5. `hard_db_audit({ projectPath, projectContext, focus, files, diff })`
+6. Fix Critical and High findings before completion
 
 ## Local development
 
