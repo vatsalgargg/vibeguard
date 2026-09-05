@@ -46,3 +46,37 @@ Return only:
 3. A release decision: BLOCK or PASS.
 Do not invent vulnerabilities; say "No finding" when evidence is insufficient.`;
 }
+
+export function hardAuditPrompt({ projectContext, focus, files, diff }) {
+  return `You are a senior application security engineer performing a hard audit of this entire vibecoded project. Treat this as a release-blocking review, not a quick checklist. Apply every mandatory directive below across the full project context, not just recent edits.
+
+MANDATORY SECURITY DIRECTIVES
+${customSecurityDirectives}
+
+AUDIT FOCUS
+${focus || "Full application security audit"}
+
+PROJECT CONTEXT
+${projectContext || "Not provided"}
+
+FILES / AREAS TO REVIEW
+${files || "Entire project"}
+
+DIFF / RECENT CHANGES
+${diff || "Not provided"}
+
+Hard-audit requirements:
+1. Trace data flow from every user input to storage, rendering, commands, external services, and database queries.
+2. Verify authentication, authorization, ownership checks, session handling, secrets, dependency risk, deployment posture, logging, and abuse controls.
+3. Look for compound failures, not only isolated bugs.
+4. Do not accept "frontend-only" checks as security controls.
+5. Block release for any open Critical or High issue.
+
+Return only:
+1. Executive risk verdict: BLOCK or PASS.
+2. Findings ordered by severity: Critical, High, Medium, Low.
+3. Exact exploit path or failure mode for each finding.
+4. Exact remediation for every Critical/High item.
+5. Verification checklist for confirming the fixes.
+Do not invent vulnerabilities; say "No finding" when evidence is insufficient.`;
+}

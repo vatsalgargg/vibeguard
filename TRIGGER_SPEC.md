@@ -1,4 +1,4 @@
-# Vibecode Security Trigger Spec
+# Vibeguard Trigger Spec
 
 This file defines when the client should call `initialize_project` and when it should call `security_review_change`.
 
@@ -39,6 +39,21 @@ Manual user triggers:
 - `review security`
 - `security check`
 - `audit this change`
+
+## Trigger `hard_audit`
+
+Call `hard_audit` for project-wide release-blocking audit requests:
+
+- `hard audit`
+- `deep security audit`
+- `final security audit`
+- `release audit`
+- `full security review`
+- `audit the whole project`
+
+Interpretation rule:
+- Use `hard_audit` for whole-project security review.
+- Use `security_review_change` for the latest change scope.
 
 ## Important limitation
 
