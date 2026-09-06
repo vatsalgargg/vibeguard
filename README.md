@@ -62,13 +62,13 @@ If you claim "automatic security on every change" without client-side rules or h
 
 ## Install
 
-Run directly with `npx`:
+Run the latest GitHub version directly with `npx`:
 
 ```powershell
-npx -y @vatsalgarg/vibeguard
+npx -y github:vatsalgargg/vibeguard
 ```
 
-Or install globally:
+After the npm package is published, you can also install globally:
 
 ```powershell
 npm install -g @vatsalgarg/vibeguard
@@ -77,14 +77,14 @@ vibeguard
 
 ## MCP config
 
-Recommended portable config:
+Recommended portable config for the latest GitHub version:
 
 ```json
 {
   "mcpServers": {
     "vibeguard": {
       "command": "npx",
-      "args": ["-y", "@vatsalgarg/vibeguard"]
+      "args": ["-y", "github:vatsalgargg/vibeguard"]
     }
   }
 }
@@ -113,7 +113,7 @@ Codex local config example:
 ```toml
 [mcp_servers.vibeguard]
 command = "npx"
-args = ["-y", "@vatsalgarg/vibeguard"]
+args = ["-y", "github:vatsalgargg/vibeguard"]
 startup_timeout_sec = 20
 tool_timeout_sec = 120
 ```
@@ -131,7 +131,7 @@ Antigravity config example:
   "mcpServers": {
     "vibeguard": {
       "command": "npx",
-      "args": ["-y", "@vatsalgarg/vibeguard"]
+      "args": ["-y", "github:vatsalgargg/vibeguard"]
     }
   }
 }
