@@ -65,7 +65,9 @@ async function statePaths(root, { createDirectory = false } = {}) {
   }
 
   const canonicalMeta = await realpath(directory);
-  if (!isWithin(root, canonicalMeta)) throw new Error("The Vibeguard state directory resolves outside projectPath.");
+  if (!isWithin(root, canonicalMeta)) {
+    throw new Error(`The Vibeguard state directory resolves outside projectPath: ${JSON.stringify({ projectPath: root, stateDirectory: canonicalMeta })}`);
+  }
 
   const file = path.join(canonicalMeta, "state.json");
   let fileInfo;
