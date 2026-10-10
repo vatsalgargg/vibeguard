@@ -5,8 +5,13 @@ import path from "node:path";
 const MAX_STATE_BYTES = 1024 * 1024;
 const stateQueues = new Map();
 
+function comparisonPath(candidate) {
+  if (process.platform !== "win32") return candidate;
+  return candidate.replace(/^\\\\\?\\UNC\\/i, "\\\\").replace(/^\\\\\?\\([a-z]:)/i, "$1");
+}
+
 function isWithin(parent, child) {
-  const relative = path.relative(parent, child);
+  const relative = path.relative(comparisonPath(parent), comparisonPath(child));
   return relative === "" || (relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative));
 }
 

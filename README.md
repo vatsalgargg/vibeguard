@@ -1,55 +1,30 @@
 # Vibeguard
 
-Vibeguard is an MCP server that provides project lifecycle instructions to AI coding clients. It initializes a project document and records review metadata, then returns security or database audit prompts for the client to follow.
+Vibeguard is a Model Context Protocol (MCP) server for AI coding clients. It creates a small project architecture document, records review metadata, and supplies prompts for security and database audits.
 
-## What the tools do
+## What it can and cannot enforce
 
-The server exposes four MCP tools:
+Vibeguard returns instructions to the MCP client and model. It does not scan a repository, run a security scanner, watch for file changes, or independently approve a release. A client can skip a tool call or ignore its response. Use CI checks and protected branches when a release must be blocked by policy.
 
-- `initialize_project` creates `ARCHITECTURE.md` and `.vibecode-security/state.json`. It refuses to overwrite either existing project documents or lifecycle state.
-- `security_review_change` returns a change review prompt and records advisory review metadata.
-- `hard_sec_audit` returns a whole-project security audit prompt.
-- `hard_db_audit` returns a database integrity audit prompt.
+The prompt text is included in this public repository and npm package, and is sent to the MCP client. It is not secret. Project files, diffs, context, and findings are treated as untrusted evidence in the returned prompts, but prompt-injection defenses cannot guarantee model behavior.
 
-The audit tools return instructions to the MCP client. They do not scan files, run a scanner, or independently decide whether a release can proceed. `hard sec audit` and `hard db audit` are user phrases that the supplied agent rules map to MCP tool calls; they are not terminal commands or standalone CLI modes.
+The server restricts project writes to existing directories within `VIBEGUARD_ALLOWED_ROOTS`. If unset, only the server's working directory is allowed. It rejects filesystem roots and symlinks for its state directory and state file. Initialization refuses to overwrite existing files; review history is stored in `.vibecode-security/state.json` using atomic file replacement.
 
-## Security and enforcement limits
+## Install and configure
 
-MCP is a request and response protocol. The server cannot observe arbitrary filesystem edits, force a client to call a tool, or stop a client from ignoring its response. Client-supplied findings are unverified, and lifecycle statuses are advisory. A downstream repository needs CI checks, branch protection, or another release control to enforce a security decision.
+Vibeguard runs over standard input/output and must be started by an MCP client. There is no terminal command such as `vibeguard hard sec audit`; the phrases `hard sec audit` and `hard db audit` are client-side triggers for MCP tool calls.
 
-The prompts are embedded in the public source and npm package, and are returned to the MCP client and model. They cannot be kept secret in this design. Vibeguard tells the reviewing model to treat repository content and supplied diffs as untrusted evidence, but prompt-injection defenses cannot guarantee that a model will never follow hostile content.
-
-The server limits writes to existing project directories inside `VIBEGUARD_ALLOWED_ROOTS`. Set it to one or more absolute directories separated by the platform path delimiter (`;` on Windows, `:` on macOS/Linux). When unset, the server working directory is the only allowed root. The target project must be inside an allowed root and cannot be a filesystem root. Vibeguard rejects a symlink used for its state directory or state file and writes review state through an atomic replacement.
-
-Example Windows MCP configuration:
-
-```json
-{
-  "mcpServers": {
-    "vibeguard": {
-      "command": "npx",
-      "args": ["-y", "@vatsalgarg/vibeguard@latest"],
-      "env": {
-        "VIBEGUARD_ALLOWED_ROOTS": "C:\\Users\\you\\Documents\\Projects"
-      }
-    }
-  }
-}
-```
-
-Initialization only creates new files. If a generated document or lifecycle state already exists, move or back it up yourself and choose a new project directory; Vibeguard will not replace it or clear its review history.
-
-## Install
-
-Configure an MCP client to launch the package with `npx`:
+Node.js 18 or newer is required. To try the latest published release from a terminal:
 
 ```powershell
 npx -y @vatsalgarg/vibeguard@latest
 ```
 
-This starts the MCP server over standard input/output. Configure it in Codex, Antigravity, or another MCP client; launching it by double-clicking or from a short-lived external terminal will close when that terminal exits.
+That command starts the MCP server and waits for an MCP client on standard input/output. Do not double-click it or launch it from a terminal window that closes immediately.
 
-Codex configuration example:
+### Codex configuration
+
+Add this to your Codex MCP configuration and replace the example path with a directory that contains your projects:
 
 ```toml
 [mcp_servers.vibeguard]
@@ -62,32 +37,59 @@ tool_timeout_sec = 120
 VIBEGUARD_ALLOWED_ROOTS = 'C:\Users\you\Documents\Projects'
 ```
 
-Add the relevant agent rules from `AGENTS.codex.md` or `AGENTS.antigravity.md`. Restart the MCP client after changing its configuration.
+On Windows, separate multiple allowed roots with `;`. On macOS and Linux, use `:`. Restart the MCP client after changing the configuration and confirm that it lists the Vibeguard tools.
 
-## Workflow
+Add the client-specific workflow rules from [`AGENTS.codex.md`](AGENTS.codex.md) or [`AGENTS.antigravity.md`](AGENTS.antigravity.md). [`TRIGGER_SPEC.md`](TRIGGER_SPEC.md) documents the phrases that should trigger tool calls.
 
-1. Call `initialize_project` for a new project before implementation.
-2. Read the created `ARCHITECTURE.md`.
-3. After meaningful code, configuration, dependency, infrastructure, authentication, API, or data-model changes, call `security_review_change` with the diff or a faithful summary.
-4. Call `hard_sec_audit` only when the user explicitly says `hard sec audit`.
-5. Call `hard_db_audit` only when the user explicitly says `hard db audit`.
-6. Resolve Critical and High findings before reporting the change complete. Add a downstream CI/release gate if the project needs an enforceable block.
+## MCP tools
 
-## Development and checks
+All four tools require `projectPath`, an absolute path inside an allowed root.
 
-Requires Node.js 18 or newer.
+| Tool | Required arguments | Optional arguments | Purpose |
+| --- | --- | --- | --- |
+| `initialize_project` | `projectPath`, `projectName`, `description` | `stack` | Creates `ARCHITECTURE.md` and `.vibecode-security/state.json` in an existing project. Call before creating a new project. |
+| `security_review_change` | `projectPath`, `changeSummary` | `diff`, `projectContext`, `findings` | Returns change-review instructions and records the supplied review metadata. |
+| `hard_sec_audit` | `projectPath` | `projectContext`, `focus`, `files`, `diff`, `findings` | Returns whole-project security audit instructions when explicitly requested. |
+| `hard_db_audit` | `projectPath` | `projectContext`, `focus`, `files`, `diff`, `findings` | Returns database integrity audit instructions when explicitly requested. |
+
+The audit and review tool names are MCP tool names, not shell commands. A client may map the exact user phrases `hard sec audit` and `hard db audit` to their matching tools. `initialize_project` and `security_review_change` are called by the client according to the supplied workflow rules.
+
+For `security_review_change`, `diff` is limited to 200,000 characters and `projectContext` to 40,000. Audit context, `files`, and `focus` are also bounded. Optional `findings` entries use:
+
+```json
+{
+  "severity": "critical | high | medium | low",
+  "title": "Short finding title",
+  "status": "open | fixed | accepted_risk",
+  "note": "Optional explanation"
+}
+```
+
+Finding severity and status are client-supplied and unverified. The server records metadata, not proof that a scan or remediation happened. It reports `BLOCK` only when submitted findings include an open Critical or High issue; otherwise the lifecycle status remains `PENDING_AGENT_REVIEW`, not an independent `PASS`.
+
+The server also exposes the read-only resource `vibecode-security://lifecycle` with general workflow instructions.
+
+## Recommended workflow
+
+1. For a new project, call `initialize_project` with its absolute path, name, description, and stack before writing product code.
+2. Read the generated `ARCHITECTURE.md` and follow the project's workflow rules.
+3. After meaningful code, configuration, dependency, infrastructure, authentication, API, schema, or data-model changes, call `security_review_change` with the diff or a faithful summary.
+4. Call `hard_sec_audit` only when the user explicitly requests `hard sec audit`.
+5. Call `hard_db_audit` only when the user explicitly requests `hard db audit`.
+6. Resolve verified Critical and High findings before reporting the work complete. Add downstream CI or branch protection for an enforceable release gate.
+
+If an initialization file already exists, Vibeguard stops instead of replacing it or clearing review history. Back up or move existing files yourself before choosing how to initialize that project.
+
+## Development and release checks
 
 ```powershell
 npm ci
 npm test
 npm audit
+npm view @vatsalgarg/vibeguard version dist-tags.latest
 ```
 
-GitHub Actions runs the storage safety tests on supported Node.js versions and checks the dependency audit.
-
-## Publish
-
-After CI passes, increment the package version and publish from the package owner account:
+GitHub Actions tests supported Node.js releases on Ubuntu and Windows and runs `npm audit`. Before publishing, require the CI checks to pass, update the package version, and publish from the package owner's npm account:
 
 ```powershell
 npm version patch
@@ -95,9 +97,9 @@ npm publish --access public
 npm view @vatsalgarg/vibeguard version dist-tags.latest
 ```
 
-Publishing sends the prompts and server code as a public npm package. Use npm's secure local authentication or trusted publishing; never paste an npm token into chat or commit it.
+Publishing makes the server source and prompts public. Use secure local npm authentication or trusted publishing. Never paste an npm token into chat or commit it.
 
-## Repository
+## Links
 
 - GitHub: [vatsalgargg/vibeguard](https://github.com/vatsalgargg/vibeguard)
 - npm: [@vatsalgarg/vibeguard](https://www.npmjs.com/package/@vatsalgarg/vibeguard)
