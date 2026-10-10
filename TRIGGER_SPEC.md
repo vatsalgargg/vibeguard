@@ -65,4 +65,6 @@ Interpretation rule:
 
 ## Important limitation
 
-These are agent-side or client-side triggers. The MCP server itself does not watch the filesystem and does not self-trigger.
+These are agent-side or client-side triggers. The MCP server itself does not watch the filesystem and does not self-trigger. Tool responses are advisory: clients can skip calls, ignore prompts, or supply inaccurate findings. The prompts are visible to the client and model because MCP returns them as tool content. Enforce release policy in downstream CI or branch protection.
+
+The server accepts only absolute project paths within `VIBEGUARD_ALLOWED_ROOTS` (or its working directory when the variable is unset). It refuses to overwrite initialization documents or lifecycle state.
