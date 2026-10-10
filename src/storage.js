@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { lstat, mkdir, readFile, realpath, rename, rm, writeFile } from "node:fs/promises";
+import { lstat, mkdir, readFile, realpath, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const MAX_STATE_BYTES = 1024 * 1024;
@@ -13,6 +13,17 @@ function comparisonPath(candidate) {
 function isWithin(parent, child) {
   const relative = path.relative(comparisonPath(parent), comparisonPath(child));
   return relative === "" || (relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative));
+}
+
+async function isStateDirectoryWithinProject(root, stateDirectory) {
+  if (isWithin(root, stateDirectory)) return true;
+  if (process.platform !== "win32") return false;
+
+  const [projectInfo, stateParentInfo] = await Promise.all([
+    stat(root, { bigint: true }),
+    stat(path.dirname(stateDirectory), { bigint: true })
+  ]);
+  return projectInfo.dev === stateParentInfo.dev && projectInfo.ino !== 0n && projectInfo.ino === stateParentInfo.ino;
 }
 
 async function canonicalDirectory(candidate, label) {
@@ -65,9 +76,7 @@ async function statePaths(root, { createDirectory = false } = {}) {
   }
 
   const canonicalMeta = await realpath(directory);
-  if (!isWithin(root, canonicalMeta)) {
-    throw new Error(`The Vibeguard state directory resolves outside projectPath: ${JSON.stringify({ projectPath: root, stateDirectory: canonicalMeta })}`);
-  }
+  if (!(await isStateDirectoryWithinProject(root, canonicalMeta))) throw new Error("The Vibeguard state directory resolves outside projectPath.");
 
   const file = path.join(canonicalMeta, "state.json");
   let fileInfo;
