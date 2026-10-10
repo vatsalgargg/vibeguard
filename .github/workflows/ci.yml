@@ -22,7 +22,20 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm ci --ignore-scripts
-      - run: npm test
+      - name: Run tests and publish Windows failure details
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $testOutput = & npm test -- --test-reporter=spec 2>&1
+          $testExitCode = $LASTEXITCODE
+          $testOutput | Write-Output
+          if ($testExitCode -ne 0) {
+            @('### Windows test output', '', '~~~text') + @($testOutput) + @('~~~') | Add-Content $env:GITHUB_STEP_SUMMARY
+          }
+          exit $testExitCode
+      - name: Run tests
+        if: runner.os != 'Windows'
+        run: npm test
 
   dependency-audit:
     name: Dependency audit
